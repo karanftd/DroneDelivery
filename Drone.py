@@ -49,12 +49,9 @@ class Drone():
 
     def __init__(self):
         pass
-        
-    #def spown(self, Job):
 
     def init(self):
         self.drone_id = uuid.uuid4().hex[:8]
-        #self.drone_id = "Drone_"+str(self.drone_id)
         self.valocity = 0
         self.battery = randint(35, 100)
         self.is_armed = False
@@ -69,7 +66,6 @@ class Drone():
 
     def update_redis(self):
         
-        time.sleep(randint(1,5))
         r.set(self.drone_id,self.mode.name)
 
     def get_drone_state(self):
@@ -82,10 +78,9 @@ class Drone():
         
         self.is_armed = True
         self.update_redis()
-        print "Getting ready {}".format(self)
+        print "Drone is Idle {}".format(self)
 
     def goto(self, job):
-        #self = self.get_drone_state()
         if self.mode == DroneState.Idle:
 
             self.targetlat = job.base_lattitude
@@ -99,54 +94,51 @@ class Drone():
             self.targetlong = job.longitude
             self.valocity = job.valocity
             self.mode = DroneState.OnTheWayToCC
-        
-        #print "Current state {}".format(self)
+        time.sleep(randint(1,5))
         return self    
     
     def deliver_package_to_address(self, job):
         
         self = self.goto(job)
         self.update_redis()
+        time.sleep(randint(1,5))
         print "Out for delivery {}".format(self)
 
     def reached_delivery_address(self):
         
-        #self = self.get_drone_state()
         self.mode = DroneState.AtDeliveryAddress
         self.altitude = 0
         self.valocity = 0
         self.is_armed = False
         self.update_redis()
+        time.sleep(randint(1,5))
         print "Reached delivery address {}".format(self)
 
     def delivered_package(self):
         
-        #self = self.get_drone_state()
         self.mode = DroneState.DeliveredPackage
-        #TODO : Log and update CC
-        #self = self.goto(job)
         self.update_redis()
+        time.sleep(randint(1,5))
         print "Delivered package {}".format(self)
     
     def back_to_base(self,job):
         
-        #self = self.get_drone_state()
         self.altitude = 0
         self.valocity = 0
         self.is_armed = False
         self.mode = DroneState.BackToCC
 
         self.update_redis()
-
+        time.sleep(randint(1,5))
         print "Back to Base {}".format(self)
     
     def back_to_idle_state(self):
         
-        #self = self.get_drone_state()
         if self.mode == DroneState.BackToCC:
             self.mode = DroneState.Idle
         
         self.update_redis()
+        time.sleep(randint(1,5))
         print "Drone is Idle {}".format(self)
 
 
