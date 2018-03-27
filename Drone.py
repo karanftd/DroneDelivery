@@ -60,17 +60,16 @@ class Drone():
         self.is_armed = False
         self.mode = DroneState.Idle
         self.altitude = 0
+        self.arm_and_ready()
         
 
     def __str__(self):
         
-        #return "'Drone_ID' : {}".format(self.drone_id)
         return "'Mode' : {} ".format(repr(self.mode))
 
     def update_redis(self):
         
         time.sleep(randint(1,5))
-        #pickled_object = pickle.dumps(self)
         r.set(self.drone_id,self.mode.name)
 
     def get_drone_state(self):

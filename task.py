@@ -3,6 +3,7 @@ import pika
 import sys
 import pickle
 from Job import *
+import redis
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -10,6 +11,24 @@ channel = connection.channel()
 channel.exchange_declare(exchange='task',
                          exchange_type='topic')
 
+r = redis.Redis(host='localhost', port=6379, db=0)
+
+assign_drone = ''
+
+def get_free_drone():
+
+    keys = r.keys()
+
+    for key in keys:
+        
+        if r.get(key) == 'Idle':
+            
+            global assign_drone
+            assign_drone = key
+            break
+    else:
+        
+        print "no Drone is free " 
 
 
 job = Job()
@@ -23,10 +42,18 @@ pickled_object = pickle.dumps(job)
 
 message = pickled_object
 
-channel.basic_publish(exchange='task',
-                      routing_key='b878de25',
-                      body=message)
-print(" [x] Sent %r" % message)
+print assign_drone
+
+get_free_drone()
+
+print assign_drone
+
+if assign_drone:
+    
+    channel.basic_publish(exchange='task',
+                          routing_key=assign_drone,
+                          body=message)
+#print(" [x] Sent %r" % message)
 
 connection.close()
 
