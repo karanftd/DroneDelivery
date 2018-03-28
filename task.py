@@ -42,11 +42,7 @@ pickled_object = pickle.dumps(job)
 
 message = pickled_object
 
-print assign_drone
-
 get_free_drone()
-
-print assign_drone
 
 if assign_drone:
     

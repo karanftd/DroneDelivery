@@ -17,8 +17,15 @@ r = redis.Redis(host='localhost', port=6379, db=0)
 	"drone_id": state,
 }
 
+"drone_id": {
+        "ID": "drone_id",
+        "state": DroneState,
+        "type": DronType,
+        "capacity": DroneCapacity,
+    }
 '''
 
+drone_redis = {}
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -57,6 +64,11 @@ class Drone():
         self.is_armed = False
         self.mode = DroneState.Idle
         self.altitude = 0
+        self.drone_redis = {
+            str(self.drone_id):{ 
+                "state" : self.mode.name,
+            }
+        }
         self.arm_and_ready()
         
 
@@ -66,13 +78,7 @@ class Drone():
 
     def update_redis(self):
         
-        r.set(self.drone_id,self.mode.name)
-
-    def get_drone_state(self):
-        
-        unpacked_object = pickle.loads(r.get(self.drone_id))
-        self = unpacked_object
-        return self
+        r.set(self.drone_id,self.drone_redis)
 
     def arm_and_ready(self):
         
@@ -159,8 +165,6 @@ def callback(ch, method, properties, body):
     print(' Delivery task recieved')
     job = Job()
     job = pickle.loads(body)
-    #print job.longitude
-    #print(" [x] %r" % job)
 
     d.arm_and_ready()
 
@@ -173,10 +177,6 @@ def callback(ch, method, properties, body):
     d.back_to_base(job)
 
     d.back_to_idle_state()
-
-    # = d.get_drone_state()
-
-    #print dd
 
 
 channel.basic_consume(callback,
