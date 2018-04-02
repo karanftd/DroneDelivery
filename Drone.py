@@ -35,9 +35,6 @@ channel.exchange_declare(exchange='task',exchange_type='topic')
 result = channel.queue_declare(exclusive=True)
 queue_name = result.method.queue
 
-
-
-
 # creating enumerations using class
 class DroneState(enum.Enum):
     
@@ -78,7 +75,7 @@ class Drone():
 
     def update_redis(self):
         
-        r.set(self.drone_id,self.drone_redis)
+        r.set("DroneID_"+self.drone_id,self.drone_redis)
 
     def arm_and_ready(self):
         

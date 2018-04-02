@@ -4,6 +4,7 @@ import sys
 import pickle
 from Job import *
 import redis
+import json
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -17,17 +18,33 @@ assign_drone = ''
 
 def get_free_drone():
 
-    keys = r.keys()
-
+    keys = r.keys(pattern="DroneID_*")
+    '''
+    "{
+        '697b7fc5': {
+            'state': 'Idle'
+        }
+    }"
+    '''
+    print keys
     for key in keys:
         
-        if r.get(key) == 'Idle':
+        # parse string to dictionary
+        strVal = r.get(key)
+        json_acceptable_string = strVal.replace("'", "\"")
+        dictVal = json.loads(json_acceptable_string)
+
+        # split to get Unique DroneID
+        droneID = key.split('_')
+        
+        if dictVal[droneID[1]]['state'] == 'Idle':
             
             global assign_drone
-            assign_drone = key
+            assign_drone = droneID[1]
             break
+        else:
+            continue
     else:
-        
         print "no Drone is free " 
 
 
