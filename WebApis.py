@@ -1,12 +1,16 @@
 from flask import Flask, jsonify
 from flask import request
 import uuid
+import pickle
+import redis
 
 from Job import Job
 from settings import *
 
 
 app = Flask(__name__)
+
+r = redis.Redis(host='localhost', port=6379, db=0)
 
 '''
 REST APIs
@@ -40,9 +44,20 @@ def create_job():
         return jsonify({"error":"param 'Longitude' not found in json or json has not been prepared properly"}), 501
     if request.json["valocity"]:
         deliveryJob.valocity = request.json["valocity"]
+    else:
+        return jsonify({"error":"param 'Longitude' not found in json or json has not been prepared properly"}), 501
 
     deliveryJob.base_lattitude = BASELAT
     deliveryJob.base_longitude = BASELON
+
+    pickled_object = pickle.dumps(deliveryJob)
+
+    r.set("JOB_"+deliveryJob.packageID, pickled_object)
+
+
+    return jsonify({"message":"Job created successfully. JOB_ID : "+str(deliveryJob.packageID)}), 201
+
+
     
 
 
